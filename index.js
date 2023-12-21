@@ -60,6 +60,23 @@ async function run() {
       const result=await bookingCollection.insertOne(query)
       res.send(result)
     })
+    
+    // get booking data by specific email
+    app.get('/booking',async(req,res)=>{
+      const email=req.query.email;
+      const query={email:email}
+      const result=await bookingCollection.find(query).toArray()
+      res.send(result)
+    })
+
+    // delete specific data by using id
+    app.delete('/booking/:id',async(req,res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)}
+      const deleteBooked=await bookingCollection.deleteOne(query)
+      res.send(deleteBooked)
+
+    })
     // Send a ping to confirm a successful connection
   } finally {
     // Ensures that the client will close when you finish/error
