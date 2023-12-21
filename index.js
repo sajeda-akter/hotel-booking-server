@@ -33,6 +33,9 @@ async function run() {
 
     // get all the rooms info
     app.get('/rooms',async(req,res)=>{
+      // const price=(req.query.price)
+      // const query={price:price}
+      // console.log(query)
       const result=await roomsCollection.find().toArray()
       res.send(result)
     })
