@@ -29,14 +29,19 @@ async function run() {
     await client.connect();
 
     const roomsCollection=client.db('hotel_booking_DB').collection('rooms')
+    const bookingCollection=client.db('hotel_booking_DB').collection('booking')
 
 
     // get all the rooms info
     app.get('/rooms',async(req,res)=>{
-      // const price=(req.query.price)
-      // const query={price:price}
+      // const price=req.query.price
+      const query={}
+      const options={
+        sort:{"price":-1}
+      }
+    
       // console.log(query)
-      const result=await roomsCollection.find().toArray()
+      const result=await roomsCollection.find(query,options).toArray()
       res.send(result)
     })
 
@@ -46,6 +51,13 @@ async function run() {
       const query={_id:new ObjectId(id)}
       const result=await roomsCollection.findOne(query)
     
+      res.send(result)
+    })
+
+    // all the booking insert
+    app.post('/booking',async(req,res)=>{
+      const query=req.body;
+      const result=await bookingCollection.insertOne(query)
       res.send(result)
     })
     // Send a ping to confirm a successful connection
