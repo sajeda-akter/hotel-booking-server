@@ -30,6 +30,7 @@ async function run() {
 
     const roomsCollection=client.db('hotel_booking_DB').collection('rooms')
     const bookingCollection=client.db('hotel_booking_DB').collection('booking')
+    const reviewsCollection=client.db('hotel_booking_DB').collection('reviews')
 
 
     // get all the rooms info
@@ -79,6 +80,13 @@ async function run() {
       const deleteBooked=await bookingCollection.deleteOne(query)
       res.send(deleteBooked)
 
+    })
+
+    // create api for reviews
+    app.post('/reviews',async(req,res)=>{
+          const query=req.body
+          const reviews=await reviewsCollection.insertOne(query)
+          res.send(reviews)
     })
     // Send a ping to confirm a successful connection
   } finally {
