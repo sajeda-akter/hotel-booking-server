@@ -88,7 +88,13 @@ async function run() {
           const reviews=await reviewsCollection.insertOne(query)
           res.send(reviews)
     })
-    // Send a ping to confirm a successful connection
+
+    // get the review data
+    app.get('/reviews',async(req,res)=>{
+      const query={}
+      const reviewaAll=await reviewsCollection.find(query).toArray()
+      res.send(reviewaAll)
+    })
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
