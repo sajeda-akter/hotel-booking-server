@@ -83,7 +83,8 @@ async function run() {
     })
 
 app.get('/booking/:id',async(req,res)=>{
-  const query={}
+  const id=req.params.id
+  const query={_id:new ObjectId(id)}
   const result=await bookingCollection.find(query).toArray()
   res.send(result)
 })
