@@ -82,6 +82,24 @@ async function run() {
 
     })
 
+app.get('/booking/:id',async(req,res)=>{
+  const query={}
+  const result=await bookingCollection.find(query).toArray()
+  res.send(result)
+})
+    // update booking date
+    app.patch('/booking/:id',async(req,res)=>{
+
+      const filter={_id:new ObjectId(req.params.id)}
+      const updateBooking=req.body
+      const updateBook={
+        $set:{
+          date:updateBooking.date
+        }
+      }
+      const result=await bookingCollection.updateOne(filter,updateBook)
+      res.send(result)
+    })
     // create api for reviews
     app.post('/reviews',async(req,res)=>{
           const query=req.body
