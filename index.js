@@ -2,25 +2,14 @@ const express = require('express')
 const app = express()
 const cors=require('cors')
 require('dotenv').config()
-// var cookieParser = require('cookie-parser')
 var jwt = require('jsonwebtoken');
+const stripeApiKey = process.env.GATEWAY_PAYMENT_API_KEY;
+const stripe = require("stripe")(stripeApiKey);
 const port = process.env.PORT ||5000
 
 // middleware
 app.use(express.json())
-// app.use(cookieParser())
-app.use(cors(
-  // {
-  // origin:[
-  //   // 'http://localhost:5173',
-  //   // 'https://assaignment-category-0004.web.app',
-  //   // 'https://assaignment-category-0004.firebaseapp.com'
-  
-  
-  // ],
-  // credentials:true
-// }
-))
+app.use(cors())
 
 
 
@@ -62,6 +51,7 @@ async function run() {
     const roomsCollection=client.db('hotel_booking_DB').collection('rooms')
     const bookingCollection=client.db('hotel_booking_DB').collection('booking')
     const reviewsCollection=client.db('hotel_booking_DB').collection('reviews')
+    const paymentCollection=client.db('hotel_booking_DB').collection('payments')
 
 
     // auth related
@@ -109,10 +99,6 @@ async function run() {
     // get booking data by specific email
     app.get('/booking',async(req,res)=>{
       const email=req.query.email;
-    //  if(email !==req.user.email){
-    //   return res.status(403).send({message:"Forbbiden access"})
-    //  }
-     
       let query={}
       if(email){
         query={email:email}
@@ -120,6 +106,13 @@ async function run() {
       const result=await bookingCollection.find(query).toArray()
       res.send(result)
     })
+
+    app.get("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const specificUser = await bookingCollection.findOne(query);
+      res.send(specificUser);
+    });
 
     // delete specific data by using id
     app.delete('/booking/:id',async(req,res)=>{
@@ -163,6 +156,38 @@ app.get('/booking/:id',async(req,res)=>{
       const reviewaAll=await reviewsCollection.find(query).toArray()
       res.send(reviewaAll)
     })
+
+
+    // payment
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    
+    app.post("/payment", async (req, res) => {
+      const payment = req.body;
+      const query = [
+        {
+          $and: [{ month: payment.month }, { email: payment.email }],
+        },
+      ];
+      const alreadyPament = await paymentCollection.findOne({ $and: query });
+      if (alreadyPament) {
+        return res.send({ message: "Already payment" });
+      }
+      const result = await paymentCollection.insertOne(payment);
+      res.send(result);
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
